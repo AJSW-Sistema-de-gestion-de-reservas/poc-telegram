@@ -13,7 +13,11 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.ChosenInlineQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.api.objects.webapp.WebAppInfo;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -55,7 +59,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 else if (message.getText().startsWith("/inline-keyboard")) {
                     handleInlineKeyboardCommand(message);
                 } else if (message.getText().startsWith("/web-app")) {
-                    handleWebAppCommand(message);
+                    handleWebAppInlineKeyboardCommand(message);
                 }
             } catch (TelegramApiException e) {
                 e.printStackTrace();
@@ -135,7 +139,30 @@ public class TelegramBot extends TelegramLongPollingBot {
         execute(sendMessage);
     }
 
-    private void handleWebAppCommand(Message message) throws TelegramApiException {
+    private void handleWebAppKeyboardCommand(Message message) throws TelegramApiException {
+        SendMessage sendMessage = new SendMessage();
+
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+
+        KeyboardRow row1 = new KeyboardRow();
+        KeyboardButton button1 = new KeyboardButton();
+        button1.setText("Open");
+        button1.setWebApp(new WebAppInfo("https://matibf99.github.io/telegram-web-app-bot-example/"));
+        row1.add(button1);
+
+        List<KeyboardRow> rows = new ArrayList<>();
+        rows.add(row1);
+
+        keyboardMarkup.setKeyboard(rows);
+
+        sendMessage.setChatId(message.getChatId());
+        sendMessage.setText("Open the web app");
+        sendMessage.setReplyMarkup(keyboardMarkup);
+
+        execute(sendMessage);
+    }
+
+    private void handleWebAppInlineKeyboardCommand(Message message) throws TelegramApiException {
         SendMessage sendMessage = new SendMessage();
 
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
@@ -143,7 +170,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         List<InlineKeyboardButton> row1 = new ArrayList<>();
         InlineKeyboardButton button1 = new InlineKeyboardButton();
         button1.setText("Open");
-        button1.setWebApp(new WebAppInfo("https://matibf99.github.io/telegram-web-app-bot-example/index.html"));
+        button1.setWebApp(new WebAppInfo("https://matibf99.github.io/telegram-web-app-bot-example/"));
         row1.add(button1);
 
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
@@ -176,6 +203,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         sendMessage.setChatId(message.getChatId());
         sendMessage.setParseMode(MARKDOWN);
         sendMessage.setText("Received:\n\n```\n" + message.getWebAppData().getData() + "\n```");
+        sendMessage.setReplyMarkup(new ReplyKeyboardRemove(true));
 
         execute(sendMessage);
     }
